@@ -1,7 +1,5 @@
 import csv
-
-
-file_name = 'src/items.csv'
+import os.path
 
 
 class Item:
@@ -10,6 +8,7 @@ class Item:
     """
     pay_rate = 1.0
     all = []
+    file_name = 'items.csv'
 
     def __init__(self, name: str, price: float, quantity: int) -> None:
         """
@@ -24,6 +23,14 @@ class Item:
         self.quantity = quantity
 
         Item.all.append(self)
+
+    def __repr__(self):
+        """Магический метод `__repr__` (для разработчика)"""
+        return f"{self.__class__.__name__}('{self.__name}', {self.price}, {self.quantity})"
+
+    def __str__(self):
+        """Магический метод `__str__` (для пользователя)"""
+        return f"{self.__name}"
 
     def calculate_total_price(self) -> float:
         """
@@ -49,16 +56,15 @@ class Item:
     def name(self, new_name):
         """В сеттере `name` проверять, что длина наименования товара не больше 10 символов.
             В противном случае, обрезать строку (оставить первые 10 символов)"""
-        if len(new_name) < 10:
-            self.__name = new_name
-        else:
-            self.__name = new_name[:10]
+        self.__name = new_name[:10]
 
     @classmethod
-    def instantiate_from_csv(cls, file_name):
+    def instantiate_from_csv(cls):
         """Класс-метод, инициализирующий экземпляры класса `Item` данными из файла _src/items.csv_"""
+        src_file = os.path.join(os.path.dirname(__file__), cls.file_name)
         cls.all.clear()
-        with open(file_name, encoding='windows-1251') as csvfile:
+
+        with open(src_file, encoding='windows-1251') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
             items = list(reader)
             for item in items:
