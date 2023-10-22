@@ -32,6 +32,11 @@ class Item:
         """Магический метод `__str__` (для пользователя)"""
         return f"{self.__name}"
 
+    def __add__(self, other):
+        """Магический метод для сложения объектов класса"""
+        if isinstance(other, Item):
+            return self.quantity + other.quantity
+
     def calculate_total_price(self) -> float:
         """
         Рассчитывает общую стоимость конкретного товара в магазине.
