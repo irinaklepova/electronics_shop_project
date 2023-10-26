@@ -1,5 +1,6 @@
 import csv
 import os.path
+from src.errors import InstantiateCSVError
 
 
 class Item:
@@ -36,6 +37,7 @@ class Item:
         """Магический метод для сложения объектов класса"""
         if isinstance(other, Item):
             return self.quantity + other.quantity
+        raise TypeError("Складывать можно только объекты класса Item и его наследников")
 
     def calculate_total_price(self) -> float:
         """
@@ -68,13 +70,25 @@ class Item:
         """Класс-метод, инициализирующий экземпляры класса `Item` данными из файла _src/items.csv_"""
         src_file = os.path.join(os.path.dirname(__file__), cls.file_name)
         cls.all.clear()
+        try:
+            with open(src_file, encoding='windows-1251') as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=',')
+                items = list(reader)
+                for item in items:
+                    cls.check_columns(item)  # проверяем ряд в таблице на наличие всех необходимых столбцов
+                    cls(item['name'], Item.string_to_number(item['price']),
+                        Item.string_to_number(item['quantity']))
 
-        with open(src_file, encoding='windows-1251') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            items = list(reader)
-            for item in items:
-                ob_item = cls(item['name'], Item.string_to_number(item['price']),
-                              Item.string_to_number(item['quantity']))
+        except FileNotFoundError:
+            raise FileNotFoundError(f'Отсутствует файл {cls.file_name}')
+        except InstantiateCSVError:
+            raise InstantiateCSVError(cls.file_name)
+
+    @classmethod
+    def check_columns(cls, row):
+        """Класс-метод для проверки названий столбцов"""
+        if not('name' in row and 'price' in row and 'quantity' in row):
+            raise InstantiateCSVError(cls.file_name)
 
     @staticmethod
     def string_to_number(line):
